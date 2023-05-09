@@ -46,7 +46,8 @@ class CalendarDatePicker2 extends StatefulWidget {
           'Error: single date picker only allows maximum one initial date');
     }
 
-    if (config.calendarType == CalendarDatePicker2Type.range &&
+    if ((config.calendarType == CalendarDatePicker2Type.range ||
+            config.calendarType == CalendarDatePicker2Type.multi_range) &&
         value.length > 1) {
       final isRangePickerValueValid = value[0] == null
           ? (value[1] != null ? invalid : valid)
@@ -239,6 +240,36 @@ class _CalendarDatePicker2State extends State<CalendarDatePicker2> {
           selectedDates.removeAt(index);
         } else {
           selectedDates.add(value);
+        }
+      } else if (widget.config.calendarType ==
+          CalendarDatePicker2Type.multi_range) {
+        if (selectedDates.isEmpty) {
+          selectedDates.add(value);
+        } else {
+          final isRangeSet =
+              selectedDates.length > 1 && selectedDates[1] != null;
+          final isSelectedDayBeforeStartDate =
+              value.isBefore(selectedDates[0]!);
+          bool cancelRange = false;
+          for (int x = 0; x + 1 < selectedDates.length; x += 2) {
+            final startDate = DateUtils.dateOnly(selectedDates[x]!);
+            final endDate = DateUtils.dateOnly(selectedDates[x + 1]!);
+            cancelRange =
+                !(value.isBefore(startDate) || value.isAfter(endDate)) &&
+                    !DateUtils.isSameDay(startDate, endDate);
+            if (cancelRange) {
+              selectedDates.removeAt(x);
+              selectedDates.removeAt(x);
+              break;
+            }
+          }
+          if (!cancelRange) {
+            if (selectedDates.contains(value)) {
+              selectedDates.remove(value);
+            } else {
+              selectedDates.add(value);
+            }
+          }
         }
       } else if (widget.config.calendarType == CalendarDatePicker2Type.range) {
         if (selectedDates.isEmpty) {
@@ -1067,12 +1098,18 @@ class _DayPickerState extends State<_DayPicker> {
           }
         }
 
-        final isFullySelectedRangePicker =
-            widget.config.calendarType == CalendarDatePicker2Type.range &&
-                widget.selectedDates.length == 2;
+        bool isFullySelectedRangePicker = false;
+        if (widget.config.calendarType == CalendarDatePicker2Type.range &&
+                widget.selectedDates.length == 2 ||
+            widget.config.calendarType == CalendarDatePicker2Type.multi_range &&
+                widget.selectedDates.length >= 2) {
+          isFullySelectedRangePicker = true;
+        }
+        ;
         var isDateInBetweenRangePickerSelectedDates = false;
 
-        if (isFullySelectedRangePicker) {
+        if (isFullySelectedRangePicker &&
+            widget.config.calendarType == CalendarDatePicker2Type.range) {
           final startDate = DateUtils.dateOnly(widget.selectedDates[0]);
           final endDate = DateUtils.dateOnly(widget.selectedDates[1]);
 
@@ -1080,6 +1117,21 @@ class _DayPickerState extends State<_DayPicker> {
               !(dayToBuild.isBefore(startDate) ||
                       dayToBuild.isAfter(endDate)) &&
                   !DateUtils.isSameDay(startDate, endDate);
+        }
+
+        if (isFullySelectedRangePicker &&
+            widget.config.calendarType == CalendarDatePicker2Type.multi_range) {
+          for (int x = 0; x + 1 < widget.selectedDates.length; x += 2) {
+            final startDate = DateUtils.dateOnly(widget.selectedDates[x]);
+            final endDate = DateUtils.dateOnly(widget.selectedDates[x + 1]);
+            isDateInBetweenRangePickerSelectedDates =
+                !(dayToBuild.isBefore(startDate) ||
+                        dayToBuild.isAfter(endDate)) &&
+                    !DateUtils.isSameDay(startDate, endDate);
+            if (isDateInBetweenRangePickerSelectedDates) {
+              break;
+            }
+          }
         }
 
         if (isDateInBetweenRangePickerSelectedDates &&

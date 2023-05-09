@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum CalendarDatePicker2Type { single, multi, range }
+enum CalendarDatePicker2Type { single, multi, range, multi_range }
 
 typedef CalendarDayTextStylePredicate = TextStyle? Function({
   required DateTime date,
