@@ -1,4 +1,6 @@
-# CalendarDatePicker2
+# Fork of CalendarDatePicker2
+
+This is a fork of CalendarDatePicker2 with added support for multi_ranges, I'll add a pr to the official repo when stable
 
 [![Pub Package](https://img.shields.io/badge/pub-v0.5.2-blue)](https://pub.dev/packages/calendar_date_picker2)
 [![Pub Package](https://img.shields.io/badge/flutter-%3E%3D1.17.0-green)](https://flutter.dev/)
